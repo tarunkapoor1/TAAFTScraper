@@ -32,11 +32,44 @@ The script will prompt you for:
 - Number of AI tools to scrape (1-1000)
 - Task/category to filter by (optional, press Enter to scrape all tasks)
 
-### Web Interface Usage
+### Usage Options
+
+#### 1. Web Interface
 ```bash
 python app.py
 ```
 Then visit http://localhost:8080 in your browser to access the web interface.
+
+#### 2. JSON API
+The application provides a JSON API endpoint at `/api/scrape`. You can make POST requests with the following structure:
+
+```bash
+curl -X POST http://localhost:8080/api/scrape \
+  -H "Content-Type: application/json" \
+  -d '{
+    "num_tools": 10,
+    "task": "writing"
+  }'
+```
+
+Response format:
+```json
+{
+  "status": "success",
+  "count": 10,
+  "tools": [
+    {
+      "name": "Tool Name",
+      "description": "Tool Description",
+      "category": "Tool Category",
+      "link": "Tool URL",
+      "image_url": "Image URL",
+      "page_number": 1
+    },
+    ...
+  ]
+}
+```
 
 ## Output
 
