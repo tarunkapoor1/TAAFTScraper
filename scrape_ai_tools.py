@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import csv
 import time
 import random
 import os
@@ -36,7 +35,6 @@ def get_user_input():
     return num_tools, task
 
 def scrape_ai_tools(api_key, num_tools_wanted=10, task_filter=''):
-    
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -78,26 +76,8 @@ def scrape_ai_tools(api_key, num_tools_wanted=10, task_filter=''):
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Try multiple selectors for tool cards
-            tools = []
-            selectors = [
-                ('div', 'ai_tool_card'),
-                ('div', 'tool-card'),
-                ('div', 'desk_row'),
-                ('a', 'ai_link_wrap')
-            ]
-            
-            for tag, class_name in selectors:
-                found_tools = soup.find_all(tag, class_=class_name)
-                if found_tools:
-                    print(f"Found {len(found_tools)} tools with {tag}.{class_name}")
-                    tools = found_tools
-                    break
-            
-            if not tools:
-                print("No tools found with standard selectors, trying alternative approach...")
-                tools = soup.find_all('div', class_=lambda x: x and ('tool' in x.lower() or 'ai' in x.lower()))
-            
+            # Find all tool items
+            tools = soup.find_all('li', class_='li')
             print(f"Total tools found: {len(tools)}")
 
             if not tools:
@@ -109,64 +89,50 @@ def scrape_ai_tools(api_key, num_tools_wanted=10, task_filter=''):
                     break
 
                 try:
-                    # Extract name
-                    name_element = (
-                        tool.find('h2') or
-                        tool.find('div', class_='title') or
-                        tool.find('h3') or
-                        tool.find('a', class_='tool-link') or
-                        tool.find('div', class_=lambda x: x and 'title' in x.lower())
-                    )
-                    name = name_element.text.strip() if name_element else ''
+                    # Extract all required fields
+                    name_element = tool.find('a', class_='ai_link')
+                    name = name_element.text.strip() if name_element else None
 
-                    # Extract description
-                    desc_element = (
-                        tool.find('div', class_='description') or
-                        tool.find('p') or
-                        tool.find('div', class_=lambda x: x and 'desc' in x.lower())
-                    )
-                    description = desc_element.text.strip() if desc_element else ''
+                    task_element = tool.find('a', class_='task_label')
+                    task = task_element.text.strip() if task_element else None
 
-                    # Extract category
-                    category_element = (
-                        tool.find('div', class_='category') or
-                        tool.find('span', class_='category') or
-                        tool.find('div', class_='task_label_wrap') or
-                        tool.find('div', class_=lambda x: x and 'category' in x.lower())
-                    )
-                    category = category_element.text.strip() if category_element else ''
+                    rating_element = tool.find('div', class_='average_rating')
+                    rating = float(rating_element.text.strip()) if rating_element else None
 
-                    # Skip if task filter is set and doesn't match
-                    if task_filter and task_filter.lower() not in category.lower():
+                    saves_element = tool.find('div', class_='saves')
+                    saves = int(saves_element.text.strip()) if saves_element else None
+
+                    pricing_element = tool.find('a', class_='ai_launch_date')
+                    pricing = pricing_element.text.strip() if pricing_element else None
+
+                    url_element = tool.find('a', class_='external_ai_link')
+                    url = url_element['href'] if url_element and 'href' in url_element.attrs else None
+
+                    # Skip if any required field is missing
+                    if not all([name, task, rating, saves, pricing, url]):
                         continue
 
-                    # Extract link
-                    link_element = tool.find('a')
-                    link = link_element['href'] if link_element and 'href' in link_element.attrs else ''
-                    if link and not link.startswith('http'):
-                        link = base_url.rstrip('/') + link
+                    # Skip if task filter is set and doesn't match
+                    if task_filter and task_filter.lower() not in task.lower():
+                        continue
 
-                    # Extract image URL
-                    img_element = tool.find('img')
-                    image_url = img_element['src'] if img_element and 'src' in img_element.attrs else ''
-                    if image_url and not image_url.startswith('http'):
-                        image_url = 'https:' + image_url if image_url.startswith('//') else base_url.rstrip('/') + image_url
+                    # Clean up URL
+                    if url and not url.startswith('http'):
+                        url = base_url.rstrip('/') + url
 
-                    # Only add tools that have at least a name
-                    if name:
-                        tool_data = {
-                            'name': name,
-                            'description': description,
-                            'category': category,
-                            'link': link,
-                            'image_url': image_url,
-                            'page_number': page
-                        }
-                        
-                        print(f"\nExtracted tool data:")
-                        print(tool_data)
-                        ai_tools.append(tool_data)
-                        print(f"Scraped tool {len(ai_tools)}/{num_tools_wanted}: {tool_data['name']}")
+                    tool_data = {
+                        'name': name,
+                        'task': task,
+                        'rating': rating,
+                        'saves': saves,
+                        'pricing': pricing,
+                        'url': url
+                    }
+                    
+                    print(f"\nExtracted tool data:")
+                    print(tool_data)
+                    ai_tools.append(tool_data)
+                    print(f"Scraped tool {len(ai_tools)}/{num_tools_wanted}: {tool_data['name']}")
                     
                 except Exception as e:
                     print(f"Error processing tool: {str(e)}")
@@ -177,38 +143,6 @@ def scrape_ai_tools(api_key, num_tools_wanted=10, task_filter=''):
             print(f"Waiting {delay:.2f} seconds before next page...")
             time.sleep(delay)
             page += 1
-
-        # Save to CSV with error handling
-        csv_path = 'ai_tools.csv'
-        try:
-            # First check if we have write permission
-            with open(csv_path, 'w', newline='', encoding='utf-8-sig') as test_file:
-                pass
-            
-            with open(csv_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
-                fieldnames = ['name', 'description', 'category', 'link', 'image_url', 'page_number']
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writeheader()
-                for tool in ai_tools:
-                    writer.writerow(tool)
-
-            print(f"\nSuccessfully scraped {len(ai_tools)} tools and saved to {csv_path}")
-            if task_filter:
-                print(f"Filtered by task: {task_filter}")
-            
-        except PermissionError:
-            print(f"Permission denied when trying to write to {csv_path}")
-            print("Trying alternative location...")
-            
-            # Try writing to the user's home directory
-            alternative_path = os.path.join(os.path.expanduser('~'), 'ai_tools.csv')
-            with open(alternative_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
-                fieldnames = ['name', 'description', 'category', 'link', 'image_url', 'page_number']
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writeheader()
-                for tool in ai_tools:
-                    writer.writerow(tool)
-            print(f"Successfully saved data to alternative location: {alternative_path}")
 
     except Exception as e:
         print(f"An error occurred: {e}")

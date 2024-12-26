@@ -1,58 +1,49 @@
-# AI Tools Scraper
+# AI Tools Scraper API
 
-A Python application that scrapes AI tool information and converts it to CSV format. Available both as a command-line tool and a web interface.
+A REST API that scrapes AI tool information from theresanaiforthat.com, providing structured data about AI tools including name, task, rating, saves, pricing, and URL.
 
-## Setup
+## API Documentation
 
-1. Clone the repository:
-```bash
-git clone [repository-url]
-cd ai-tools-scraper
+### Base URL
+```
+https://your-app-url/
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
+### Endpoints
+
+#### 1. GET /
+Returns API information and available endpoints.
+
+Response:
+```json
+{
+  "status": "success",
+  "message": "AI Tools Scraper API",
+  "endpoints": {
+    "/api/scrape": {
+      "method": "POST",
+      "description": "Scrape AI tools data",
+      "parameters": {
+        "num_tools": "Number of tools to scrape (1-1000)",
+        "task": "Optional task/category filter"
+      }
+    }
+  }
+}
 ```
 
-3. (Optional) Set your API key:
-   - The application comes with a default API key
-   - To use your own key, create a .env file:
-   ```bash
-   SCRAPER_API_KEY=your_api_key_here
-   ```
+#### 2. POST /api/scrape
+Scrapes AI tool information based on provided parameters.
 
-4. Run the application:
-
-### Command Line Usage
-```bash
-python scrape_ai_tools.py
-```
-The script will prompt you for:
-- Number of AI tools to scrape (1-1000)
-- Task/category to filter by (optional, press Enter to scrape all tasks)
-
-### Usage Options
-
-#### 1. Web Interface
-```bash
-python app.py
-```
-Then visit http://localhost:8080 in your browser to access the web interface.
-
-#### 2. JSON API
-The application provides a JSON API endpoint at `/api/scrape`. You can make POST requests with the following structure:
-
-```bash
-curl -X POST http://localhost:8080/api/scrape \
-  -H "Content-Type: application/json" \
-  -d '{
-    "num_tools": 10,
-    "task": "writing"
-  }'
+Request Body:
+```json
+{
+  "num_tools": 10,
+  "task": "writing"
+}
 ```
 
-Response format:
+Response:
 ```json
 {
   "status": "success",
@@ -60,28 +51,32 @@ Response format:
   "tools": [
     {
       "name": "Tool Name",
-      "description": "Tool Description",
-      "category": "Tool Category",
-      "link": "Tool URL",
-      "image_url": "Image URL",
-      "page_number": 1
-    },
-    ...
+      "task": "Tool Category",
+      "rating": 4.5,
+      "saves": 38,
+      "pricing": "Free",
+      "url": "https://tool-url.com"
+    }
   ]
 }
 ```
 
-## Output
+### Error Responses
 
-The script generates an `ai_tools.csv` file containing the following information for each AI tool:
-- Name
-- Task/Category
-- Rating
-- Number of saves
-- Pricing
-- URL
+```json
+{
+  "status": "error",
+  "message": "Error description"
+}
+```
 
-## Deployment on Digital Ocean
+Common error messages:
+- "No JSON data provided"
+- "num_tools must be between 1 and 1000"
+- "Invalid input: [details]"
+- "Server error: [details]"
+
+## Deployment
 
 1. Create a new App on Digital Ocean App Platform:
    - Go to Digital Ocean Dashboard
@@ -97,13 +92,13 @@ The script generates an `ai_tools.csv` file containing the following information
 3. Deploy the app:
    - Click "Deploy"
    - Wait for the build and deployment to complete
-   - Access your app at the provided URL
+   - Access your API at the provided URL
 
 ## Development
 
 The application consists of two main components:
 - `scrape_ai_tools.py`: Core scraping functionality
-- `app.py`: Web interface using Flask
+- `app.py`: REST API implementation using Flask
 
 The Procfile specifies the web process type for Digital Ocean deployment using gunicorn.
 
