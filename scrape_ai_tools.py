@@ -35,9 +35,7 @@ def get_user_input():
     task = input("Enter the task/category to filter by (press Enter for all tasks): ").strip()
     return num_tools, task
 
-def scrape_ai_tools(api_key):
-    # Get user preferences
-    num_tools_wanted, task_filter = get_user_input()
+def scrape_ai_tools(api_key, num_tools_wanted=10, task_filter=''):
     
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -215,6 +213,14 @@ def scrape_ai_tools(api_key):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+    return ai_tools
+
 if __name__ == "__main__":
-    api_key = '8QR2EG5JQ7W6BSU8IQJDHRUW8UU2JL97ABZH4TUEWRSKCK74AJN9NGQFOAMJA9MD4N3Z45OLHB6USX4J'
-    scrape_ai_tools(api_key)
+    api_key = os.getenv('SCRAPER_API_KEY')
+    if not api_key:
+        print("Error: SCRAPER_API_KEY environment variable not set")
+        sys.exit(1)
+    
+    num_tools, task = get_user_input()
+    result = scrape_ai_tools(api_key, num_tools, task)
+    print(f"Successfully scraped {len(result)} tools")

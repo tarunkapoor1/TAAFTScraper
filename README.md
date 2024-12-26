@@ -1,6 +1,6 @@
 # AI Tools Scraper
 
-A Python script that scrapes AI tool information and converts it to CSV format.
+A Python application that scrapes AI tool information and converts it to CSV format. Available both as a command-line tool and a web interface.
 
 ## Setup
 
@@ -20,14 +20,21 @@ pip install -r requirements.txt
 SCRAPER_API_KEY=your_api_key_here
 ```
 
-4. Run the script:
+4. Run the application:
+
+### Command Line Usage
 ```bash
 python scrape_ai_tools.py
 ```
-
 The script will prompt you for:
 - Number of AI tools to scrape (1-1000)
 - Task/category to filter by (optional, press Enter to scrape all tasks)
+
+### Web Interface Usage
+```bash
+python app.py
+```
+Then visit http://localhost:8080 in your browser to access the web interface.
 
 ## Output
 
@@ -41,36 +48,29 @@ The script generates an `ai_tools.csv` file containing the following information
 
 ## Deployment on Digital Ocean
 
-1. Create a new Droplet on Digital Ocean
-2. SSH into your Droplet:
-```bash
-ssh root@your_droplet_ip
-```
+1. Create a new App on Digital Ocean App Platform:
+   - Go to Digital Ocean Dashboard
+   - Click "Create" -> "Apps"
+   - Choose your GitHub repository
 
-3. Install required packages:
-```bash
-apt update
-apt install python3-pip python3-venv git
-```
+2. Configure the app:
+   - Set Environment Variables:
+     - SCRAPER_API_KEY=your_api_key_here
+   - Build Command: `pip install -r requirements.txt`
+   - Run Command: Will be automatically detected from Procfile
 
-4. Clone and setup:
-```bash
-git clone [repository-url]
-cd ai-tools-scraper
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+3. Deploy the app:
+   - Click "Deploy"
+   - Wait for the build and deployment to complete
+   - Access your app at the provided URL
 
-5. Set up environment variables:
-```bash
-echo "SCRAPER_API_KEY=your_api_key_here" > .env
-```
+## Development
 
-6. Run the script:
-```bash
-python scrape_ai_tools.py
-```
+The application consists of two main components:
+- `scrape_ai_tools.py`: Core scraping functionality
+- `app.py`: Web interface using Flask
+
+The Procfile specifies the web process type for Digital Ocean deployment using gunicorn.
 
 ## License
 
