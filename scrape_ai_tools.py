@@ -216,10 +216,8 @@ def scrape_ai_tools(api_key, num_tools_wanted=10, task_filter=''):
     return ai_tools
 
 if __name__ == "__main__":
-    api_key = os.getenv('SCRAPER_API_KEY')
-    if not api_key:
-        print("Error: SCRAPER_API_KEY environment variable not set")
-        sys.exit(1)
+    # Use environment variable if set, otherwise use default API key
+    api_key = os.getenv('SCRAPER_API_KEY', '8QR2EG5JQ7W6BSU8IQJDHRUW8UU2JL97ABZH4TUEWRSKCK74AJN9NGQFOAMJA9MD4N3Z45OLHB6USX4J')
     
     num_tools, task = get_user_input()
     result = scrape_ai_tools(api_key, num_tools, task)

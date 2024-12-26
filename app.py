@@ -64,11 +64,8 @@ def index():
             num_tools = int(request.form.get('num_tools', 10))
             task = request.form.get('task', '').strip()
             
-            # Get the API key from environment variable
-            api_key = os.getenv('SCRAPER_API_KEY')
-            if not api_key:
-                return render_template_string(HTML_TEMPLATE, 
-                    result="Error: SCRAPER_API_KEY environment variable not set")
+            # Use environment variable if set, otherwise use default API key
+            api_key = os.getenv('SCRAPER_API_KEY', '8QR2EG5JQ7W6BSU8IQJDHRUW8UU2JL97ABZH4TUEWRSKCK74AJN9NGQFOAMJA9MD4N3Z45OLHB6USX4J')
 
             # Run the scraper with user inputs
             result = scrape_ai_tools(api_key, num_tools, task)

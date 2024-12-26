@@ -15,10 +15,12 @@ cd ai-tools-scraper
 pip install -r requirements.txt
 ```
 
-3. Create a .env file with your API key:
-```bash
-SCRAPER_API_KEY=your_api_key_here
-```
+3. (Optional) Set your API key:
+   - The application comes with a default API key
+   - To use your own key, create a .env file:
+   ```bash
+   SCRAPER_API_KEY=your_api_key_here
+   ```
 
 4. Run the application:
 
@@ -54,8 +56,8 @@ The script generates an `ai_tools.csv` file containing the following information
    - Choose your GitHub repository
 
 2. Configure the app:
-   - Set Environment Variables:
-     - SCRAPER_API_KEY=your_api_key_here
+   - (Optional) Set Environment Variables:
+     - SCRAPER_API_KEY=your_api_key_here (if you want to use your own key)
    - Build Command: `pip install -r requirements.txt`
    - Run Command: Will be automatically detected from Procfile
 
