@@ -29,7 +29,7 @@ Response:
       }
     }
   }
-}
+}]
 ```
 
 #### 2. POST /api/scrape
